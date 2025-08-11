@@ -34,19 +34,17 @@ static void push_lol_str_maybe(lua_State *L, lol_html_str_t *s) {
     } else {
         lua_pushlstring(L, s->data, s->len);
         lol_html_str_free(*s);
-        free(s);
     }
 }
 
 static int push_last_error(lua_State *L) {
-    lol_html_str_t *err = lol_html_take_last_error();
+    lol_html_str_t err = lol_html_take_last_error();
     lua_pushnil(L);
-    if (err == NULL) {
+    if (err.len == 0) {
         lua_pushliteral(L, "unknown error");
     } else {
-        lua_pushlstring(L, err->data, err->len);
-        lol_html_str_free(*err);
-        free(err);
+        lua_pushlstring(L, err.data, err.len);
+        lol_html_str_free(err);
     }
     return 2;
 }
@@ -167,19 +165,23 @@ element_handler(lol_html_element_t *element, void *user_data)
 /* doctype */
 static int doctype_get_name(lua_State *L) {
     const lol_html_doctype_t **doctype = check_valid_udata(L, 1, PREFIX "doctype");
-    push_lol_str_maybe(L, lol_html_doctype_name_get(*doctype));
+    lol_html_str_t name = lol_html_doctype_name_get(*doctype);
+    push_lol_str_maybe(L, &name);
     return 1;
 }
 
 static int doctype_get_id(lua_State *L) {
     const lol_html_doctype_t **doctype = check_valid_udata(L, 1, PREFIX "doctype");
-    push_lol_str_maybe(L, lol_html_doctype_public_id_get(*doctype));
+    lol_html_str_t public_id = lol_html_doctype_public_id_get(*doctype);
+
+    push_lol_str_maybe(L, &public_id);
     return 1;
 }
 
 static int doctype_get_system_id(lua_State *L) {
     const lol_html_doctype_t **doctype = check_valid_udata(L, 1, PREFIX "doctype");
-    push_lol_str_maybe(L, lol_html_doctype_system_id_get(*doctype));
+    lol_html_str_t system_id = lol_html_doctype_system_id_get(*doctype);
+    push_lol_str_maybe(L, &system_id);
     return 1;
 }
 
@@ -263,7 +265,7 @@ static int text_chunk_get_text(lua_State *L) {
 }
 
 static int text_chunk_is_last_in_text_node(lua_State *L) {
-    const lol_html_text_chunk_t **chunk = check_valid_udata(L, 1, PREFIX "text_chunk");
+    lol_html_text_chunk_t **chunk = check_valid_udata(L, 1, PREFIX "text_chunk");
     lua_pushboolean(L, lol_html_text_chunk_is_last_in_text_node(*chunk));
     return 1;
 }
@@ -349,7 +351,8 @@ static int element_get_attribute(lua_State *L) {
     size_t len;
     lol_html_element_t **el = check_valid_udata(L, 1, PREFIX "element");
     const char *attr = luaL_checklstring(L, 2, &len);
-    push_lol_str_maybe(L, lol_html_element_get_attribute(*el, attr, len));
+    lol_html_str_t value = lol_html_element_get_attribute(*el, attr, len);
+    push_lol_str_maybe(L, &value);
     return 1;
 }
 
