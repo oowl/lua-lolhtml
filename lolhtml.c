@@ -28,12 +28,12 @@ typedef struct {
     int callback_index;
 } handler_data_t;
 
-static void push_lol_str_maybe(lua_State *L, lol_html_str_t *s) {
-    if (s == NULL) {
+static void push_lol_str_maybe(lua_State *L, lol_html_str_t s) {
+    if (s.len == 0) {
         lua_pushnil(L);
     } else {
-        lua_pushlstring(L, s->data, s->len);
-        lol_html_str_free(*s);
+        lua_pushlstring(L, s.data, s.len);
+        lol_html_str_free(s);
     }
 }
 
@@ -165,23 +165,19 @@ element_handler(lol_html_element_t *element, void *user_data)
 /* doctype */
 static int doctype_get_name(lua_State *L) {
     const lol_html_doctype_t **doctype = check_valid_udata(L, 1, PREFIX "doctype");
-    lol_html_str_t name = lol_html_doctype_name_get(*doctype);
-    push_lol_str_maybe(L, &name);
+    push_lol_str_maybe(L, lol_html_doctype_name_get(*doctype));
     return 1;
 }
 
 static int doctype_get_id(lua_State *L) {
     const lol_html_doctype_t **doctype = check_valid_udata(L, 1, PREFIX "doctype");
-    lol_html_str_t public_id = lol_html_doctype_public_id_get(*doctype);
-
-    push_lol_str_maybe(L, &public_id);
+    push_lol_str_maybe(L, lol_html_doctype_public_id_get(*doctype));
     return 1;
 }
 
 static int doctype_get_system_id(lua_State *L) {
     const lol_html_doctype_t **doctype = check_valid_udata(L, 1, PREFIX "doctype");
-    lol_html_str_t system_id = lol_html_doctype_system_id_get(*doctype);
-    push_lol_str_maybe(L, &system_id);
+    push_lol_str_maybe(L, lol_html_doctype_system_id_get(*doctype));
     return 1;
 }
 
@@ -351,8 +347,7 @@ static int element_get_attribute(lua_State *L) {
     size_t len;
     lol_html_element_t **el = check_valid_udata(L, 1, PREFIX "element");
     const char *attr = luaL_checklstring(L, 2, &len);
-    lol_html_str_t value = lol_html_element_get_attribute(*el, attr, len);
-    push_lol_str_maybe(L, &value);
+    push_lol_str_maybe(L, lol_html_element_get_attribute(*el, attr, len));
     return 1;
 }
 
